@@ -6,6 +6,8 @@ import com.example.demo.model.Product;
 import com.example.demo.repository.CategoryRepository;
 import com.example.demo.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,8 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    
+    private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 
     // Listar todos los productos activos (paginado)
     public Page<ProductDTO> getAllProducts(Pageable pageable) {
@@ -65,20 +69,26 @@ public class ProductService {
     // Actualizar producto (ADMIN)
     @Transactional
     public ProductDTO updateProduct(Long id, ProductDTO dto) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        try {
+            Product product = productRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
 
-        product.setName(dto.getName());
-        product.setDescription(dto.getDescription());
-        product.setPrice(dto.getPrice());
-        product.setImageUrl(dto.getImageUrl());
-        product.setStock(dto.getStock());
-        product.setCategory(category);
+            product.setName(dto.getName());
+            product.setDescription(dto.getDescription());
+            product.setPrice(dto.getPrice());
+            product.setImageUrl(dto.getImageUrl());
+            product.setStock(dto.getStock());
+            product.setCategory(category);
 
-        return toDTO(productRepository.save(product));
+            Product updatedProduct = productRepository.save(product);
+            return toDTO(updatedProduct);
+        } catch (Exception e) {
+            log.error("Error al actualizar producto", e);
+            throw new RuntimeException("No se pudo actualizar el producto: " + e.getMessage(), e);
+        }
     }
 
     // Eliminar producto (soft delete -- ADMIN)
