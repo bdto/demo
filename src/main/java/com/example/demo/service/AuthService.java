@@ -115,7 +115,7 @@ public class AuthService {
 
         // Enviar email
         // La URL apunta al frontend, que muestra un form para ingresar nueva password
-        String resetUrl = "http://localhost:3000/reset-password?token=" + resetToken;
+        String resetUrl = "http://localhost:5173/reset-password?token=" + resetToken;
         emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), resetUrl);
 
         return "Se ha enviado un email con instrucciones para restablecer tu contrasena";
